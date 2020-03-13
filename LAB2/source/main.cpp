@@ -1,11 +1,11 @@
 #include <Windows.h>
-#include <windowsx.h>
 #include <cstdlib> //rand
 #include <time.h> //time
 #include <string> //stoi
+
 #include "res.h"
 
-#define DEBUG //do podpatrywania
+//#define DEBUG //do podpatrywania
 
 //ZMIENNE GLOBALNE - nie mog³em znaleŸæ wiadomoœci wysy³anej przy pokazywaniu-"inicjalizacji" okienka
 INT iNumber;
@@ -80,6 +80,13 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
           iGuessCount++;
           SetWindowTextW(hEditGuess, L""); //czyszczenie po strzale
+          //info zwrotne
+          HWND hHintText = GetDlgItem(hWnd, IDC_STATICHINT);
+          if (iGuess < iNumber) //za ma³o
+            wsprintfW(szText, L"%d - Za ma³o", iGuess);
+          else
+            wsprintfW(szText, L"%d - Za du¿o", iGuess);
+          SetWindowTextW(hHintText, szText);
         }
 
         return 0;

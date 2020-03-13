@@ -69,6 +69,7 @@ BEGIN
     EDITTEXT        IDC_EDITGUESS,8,24,93,14,ES_AUTOHSCROLL
     LTEXT           "Wprowadz liczbe z zakresu 1-40",IDC_STATIC,8,8,109,8
     LTEXT           "",IDC_STATICINFO,8,48,28,11
+    LTEXT           "",IDC_STATICHINT,8,40,93,8
 END
 
 
