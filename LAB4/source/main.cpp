@@ -3,15 +3,12 @@
 
 #include <string>
 
-HINSTANCE ghInstance;
 
 INT_PTR CALLBACK WindowProcKA(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK WindowProcKO(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR szCmdLine, _In_ int iCmdShow)
 {
-  ghInstance = hInstance;
-
   wchar_t szText[64];
 
   //Kajko
@@ -50,8 +47,12 @@ INT_PTR CALLBACK WindowProcKA(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     PostQuitMessage(0);
     return TRUE;
   case WM_INITDIALOG:
-    HICON hIcon = LoadIconW(ghInstance, MAKEINTRESOURCE(IDI_ICON_KA));
+    HICON hIcon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCE(IDI_ICON_KA));
     SendMessageW(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+
+    HMENU hMenu = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCE(IDR_MENU_KA));
+    SetMenu(hWnd, hMenu);
+
     return TRUE;
   }
 
@@ -64,13 +65,16 @@ INT_PTR CALLBACK WindowProcKO(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
   switch (uMsg)
   {
   case WM_CLOSE:  //zamykanie
-    MessageBoxW(NULL, L"kokosz", L"kokosz", MB_OK);
     DestroyWindow(hWnd);
     PostQuitMessage(0);
     return TRUE;
   case WM_INITDIALOG:
-    HICON hIcon = LoadIconW(ghInstance, MAKEINTRESOURCE(IDI_ICON_KO));
+    HICON hIcon = LoadIconW(GetModuleHandleW(NULL) , MAKEINTRESOURCE(IDI_ICON_KO));
     SendMessageW(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+
+    HMENU hMenu = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCE(IDR_MENU_KO));
+    SetMenu(hWnd, hMenu);
+
     return TRUE;
   }
 

@@ -156,6 +156,9 @@
     <ResourceCompile Include="..\source\res.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\source\k&amp;k_.ico" />
+    <Image Include="..\source\kajko.ico" />
+    <Image Include="..\source\kokosz.ico" />
     <Image Include="k&amp;k_.ico" />
     <Image Include="kajko.ico" />
     <Image Include="kokosz.ico" />

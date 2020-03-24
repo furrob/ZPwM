@@ -68,6 +68,107 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU_KA MENU
+BEGIN
+    POPUP "Aparycja"
+    BEGIN
+        MENUITEM "Niski",                       ID_APARYCJA_NISKI
+        POPUP "Nie³ysy"
+        BEGIN
+            MENUITEM "W³osy czarne",                ID_NIE40035
+        END
+        MENUITEM "Waga œrednia",                ID_APARYCJA_WAGA40006
+    END
+    POPUP "Uzbrojenie"
+    BEGIN
+        MENUITEM "Miecz",                       ID_UZBROJENIE_MIECZ
+        MENUITEM "£uk",                         ID_UZBROJENIE_40008
+        MENUITEM "Kolega Kokosz",               ID_UZBROJENIE_BUTY
+        MENUITEM "Jajko",                       ID_UZBROJENIE_JAJKO
+    END
+    POPUP "Ubiór"
+    BEGIN
+        MENUITEM "Przepaska",                   ID_UBI40019
+        MENUITEM "Tunika",                      ID_UBI40020
+        MENUITEM "Zabudowane sanda³y",          ID_UBI40030
+    END
+    POPUP "Cechy szczególne"
+    BEGIN
+        MENUITEM "Yntelygencja",                ID_CECHY_YNTELYGENCJA
+        MENUITEM "Odwaga",                      ID_CECHY_ODWAGA
+        POPUP "Uosobienie cech pozytywnych"
+        BEGIN
+            MENUITEM "Odwaga",                      ID_UOSOBIENIECECHPOZYTYWNYCH_CHOCIA40034
+            MENUITEM "Rozwaga",                     ID_UOSOBIENIECECHPOZYTYWNYCH_ROZWAGA
+            MENUITEM "Przewaga",                    ID_UOSOBIENIECECHPOZYTYWNYCH_PRZEWAGA
+        END
+    END
+END
+
+IDR_MENU_KO MENU
+BEGIN
+    POPUP "Aparycja"
+    BEGIN
+        MENUITEM "Wysoki",                      ID_APARYCJA_WYSOKI
+        MENUITEM "£ysy",                        ID_APARYCJA_40004
+        MENUITEM "Waga ciê¿ka",                 ID_APARYCJA_WAGACI40005
+    END
+    POPUP "Uzbrojenie"
+    BEGIN
+        MENUITEM "Ciê¿ka rêka",                 ID_UZBROJENIE_CI40009
+        MENUITEM "Druga ciê¿ka rêka",           ID_UZBROJENIE_DRUGACI40010
+        MENUITEM "Kamieñ",                      ID_UZBROJENIE_NOGA
+    END
+    POPUP "Ubiór"
+    BEGIN
+        MENUITEM "He³m",                        ID_UBI40013
+        MENUITEM "Koszula",                     ID_UBI40014
+        POPUP "Spodnie"
+        BEGIN
+            MENUITEM "Pas",                         ID_SPODNIE_PAS
+        END
+        POPUP "Buty"
+        BEGIN
+            POPUP "Onuce"
+            BEGIN
+                POPUP "Lewy"
+                BEGIN
+                    POPUP "Materia³"
+                    BEGIN
+                        MENUITEM "Bawe³na(95%)",                ID_MATERIA40027
+                        MENUITEM "Elastan(5%)",                 ID_MATERIA40028
+                    END
+                    MENUITEM "Dziura",                      ID_LEWY_DZIURA
+                END
+                POPUP "Prawy"
+                BEGIN
+                    MENUITEM "Dziura",                      ID_PRAWY_DZIURA
+                END
+                MENUITEM "Zapasowy",                    ID_ONUCE_ZAPASOWY
+            END
+        END
+    END
+    POPUP "Cechy szczególne"
+    BEGIN
+        MENUITEM "Du¿o je",                     ID_CECHYSZCZEG40037
+        MENUITEM "Lubi jeœæ",                   ID_CECHYSZCZEG40038
+        POPUP "Nie lubi jak przekszadza mu siê "
+        BEGIN
+            MENUITEM "W jedzeniu",                  ID_NIELUBIJAKPRZEKSZADZAMUSI40040
+            MENUITEM "W piciu",                     ID_NIELUBIJAKPRZEKSZADZAMUSI40041
+            MENUITEM "Kiedy je",                    ID_NIELUBIJAKPRZEKSZADZAMUSI40042
+        END
+        MENUITEM "Sk³onny do rêkoczynów",       ID_CECHYSZCZEG40043
+        MENUITEM "Tchórzliwy",                  ID_CECHYSZCZEG40047
+    END
+END
+
 #endif    // Polish (Poland) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +185,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_MAINVIEW DIALOGEX 0, 0, 253, 171
+IDD_MAINVIEW DIALOGEX 0, 0, 253, 93
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
 CAPTION "Window"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
@@ -102,10 +203,8 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_MAINVIEW, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 153
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 70
+        VERTGUIDE, 126
+        TOPMARGIN, 16
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -39,5 +39,14 @@
     <Image Include="kokosz.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\source\k&amp;k_.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\source\kajko.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\source\kokosz.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
