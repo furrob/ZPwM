@@ -88,19 +88,52 @@ BEGIN
     POPUP "Uzbrojenie"
     BEGIN
         MENUITEM "Miecz",                       ID_UZBROJENIE_MIECZ
-        MENUITEM "£uk",                         ID_UZBROJENIE_40008
+        POPUP "Krótki ³uk"
+        BEGIN
+            MENUITEM "Strza³y z krzemieniowym grotem", ID_KR40051
+            MENUITEM "Truj¹ce strza³y z ropuch¹",   ID_KR40052
+        END
         MENUITEM "Kolega Kokosz",               ID_UZBROJENIE_BUTY
-        MENUITEM "Jajko",                       ID_UZBROJENIE_JAJKO
+        MENUITEM "Jajko ca³kiem sporych rozmiarów", ID_UZBROJENIE_JAJKO
     END
     POPUP "Ubiór"
     BEGIN
-        MENUITEM "Przepaska",                   ID_UBI40019
-        MENUITEM "Tunika",                      ID_UBI40020
-        MENUITEM "Zabudowane sanda³y",          ID_UBI40030
+        MENUITEM "Czerwona przepaska zakrywaj¹ca ³ysinê na œrodku g³owy", ID_UBI40019
+        POPUP "Tunika"
+        BEGIN
+            MENUITEM "Koszulka",                    ID_TUNIKA_POMARA40048
+        END
+        POPUP "Zielone spodnie"
+        BEGIN
+            MENUITEM "Lewa nogawka",                ID_ZIELONESPODNIE_LEWANOGAWKA
+            MENUITEM "Prawa nogawka",               ID_ZIELONESPODNIE_PRAWANOGAWKA
+        END
+        POPUP "Kierpce"
+        BEGIN
+            POPUP "Lewy"
+            BEGIN
+                MENUITEM "Rozmiar 36",                  ID_LEWY_ROZMIAR36
+                MENUITEM "Œwiñska skóra",               ID_LEWY_CHOLEWKA
+            END
+            POPUP "Prawy"
+            BEGIN
+                MENUITEM "Rozmiar 34",                  ID_PRAWY_ROZMIAR34
+                MENUITEM "Œwiñska skóra",               ID_PRAWY_40070
+                POPUP "Mazista substancja o niepokoj¹cym zapachu"
+                BEGIN
+                    POPUP "Przyklejone rzeczy"
+                    BEGIN
+                        MENUITEM "Piasek",                      ID_PRZYKLEJONERZECZY_PIASEK
+                        MENUITEM "Z³ota moneta której nikt nie chce dotkn¹æ", ID_PRZYKLEJONERZECZY_Z40075
+                    END
+                    MENUITEM "Biedronka",                   ID_MAZISTASUBSTANCJAONIEPOKOJ40073
+                END
+            END
+        END
     END
     POPUP "Cechy szczególne"
     BEGIN
-        MENUITEM "Yntelygencja",                ID_CECHY_YNTELYGENCJA
+        MENUITEM "Inteligencja",                ID_CECHY_YNTELYGENCJA
         MENUITEM "Odwaga",                      ID_CECHY_ODWAGA
         POPUP "Uosobienie cech pozytywnych"
         BEGIN
@@ -108,6 +141,7 @@ BEGIN
             MENUITEM "Rozwaga",                     ID_UOSOBIENIECECHPOZYTYWNYCH_ROZWAGA
             MENUITEM "Przewaga",                    ID_UOSOBIENIECECHPOZYTYWNYCH_PRZEWAGA
         END
+        MENUITEM "Ma³y ale wariat",             ID_CECHYSZCZEG40064
     END
 END
 
@@ -117,21 +151,39 @@ BEGIN
     BEGIN
         MENUITEM "Wysoki",                      ID_APARYCJA_WYSOKI
         MENUITEM "£ysy",                        ID_APARYCJA_40004
-        MENUITEM "Waga ciê¿ka",                 ID_APARYCJA_WAGACI40005
+        MENUITEM "Waga ciê¿ka +",               ID_APARYCJA_WAGACI40005
     END
     POPUP "Uzbrojenie"
     BEGIN
         MENUITEM "Ciê¿ka rêka",                 ID_UZBROJENIE_CI40009
         MENUITEM "Druga ciê¿ka rêka",           ID_UZBROJENIE_DRUGACI40010
         MENUITEM "Kamieñ",                      ID_UZBROJENIE_NOGA
+        MENUITEM "Potê¿nych rozmiarów brzuch",  ID_UZBROJENIE_POT40054
     END
     POPUP "Ubiór"
     BEGIN
-        MENUITEM "He³m",                        ID_UBI40013
-        MENUITEM "Koszula",                     ID_UBI40014
-        POPUP "Spodnie"
+        MENUITEM "Metalowy he³m",               ID_UBI40013
+        MENUITEM "Koszula bez rêkawów",         ID_UBI40014
+        POPUP "Du¿e spodnie"
         BEGIN
-            MENUITEM "Pas",                         ID_SPODNIE_PAS
+            POPUP "Potê¿ny pas"
+            BEGIN
+                MENUITEM "Powa¿nych rozmiarów klamra",  ID_POT40055
+                POPUP "Nieprzeciêtnie szeroki rzemieñ"
+                BEGIN
+                    POPUP "Ukryty schowek na jedzenie"
+                    BEGIN
+                        POPUP "Kanapki z poprzedniego roku szkolnego nie wyci¹gniête ze schowka na czas"
+                        BEGIN
+                            MENUITEM "Chleb",                       ID_KANAPKIZPOPRZEDNIEGOROKUSZKOLNEGONIEWYCI40059
+                            MENUITEM "Cebula",                      ID_KANAPKIZPOPRZEDNIEGOROKUSZKOLNEGONIEWYCI40060
+                            MENUITEM "Pieczeñ",                     ID_KANAPKIZPOPRZEDNIEGOROKUSZKOLNEGONIEWYCI40061
+                            MENUITEM "Aspergillus P. Micheli ex Haller", ID_KANAPKIZPOPRZEDNIEGOROKUSZKOLNEGONIEWYCI40062
+                            MENUITEM "Mikroorganizmy",              ID_KANAPKIZPOPRZEDNIEGOROKUSZKOLNEGONIEWYCI40063
+                        END
+                    END
+                END
+            END
         END
         POPUP "Buty"
         BEGIN
