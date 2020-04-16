@@ -89,7 +89,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         StretchBlt(hDC, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
           rSelection.left, rSelection.top,
-          rSelection.right, rSelection.bottom, SRCCOPY);
+          rSelection.right - rSelection.left, rSelection.bottom - rSelection.top, SRCCOPY);
       }
       else if(!bFit) //fit
       {
