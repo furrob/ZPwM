@@ -1,5 +1,8 @@
 #include <Windows.h>
+#include <windowsx.h> //GET_*_LPARAM
 #include "res.h"
+
+#define ZOOM_FACTOR 4
 
 INT_PTR CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -30,20 +33,28 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
   static BOOL bFit = FALSE;
 
+  static BOOL bZoomed = FALSE;
+  static RECT rSelection = {};
+
+  WCHAR szText[512];
+
   switch (uMsg)
   {
-  case WM_INITDIALOG:
+    case WM_INITDIALOG:
     {
       //Load menu
       HMENU hMenu = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCE(IDR_MAINMENU));
       SetMenu(hWnd, hMenu);
 
       //Path relative to working dir when launched from VS
-      hBitmap = (HBITMAP)LoadImageW(GetModuleHandleW(NULL), L"./../source/bubr.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+      hBitmap = (HBITMAP)LoadImageW(GetModuleHandleW(NULL), L"./../source/bitmaps/test.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-      if (hBitmap == NULL)
+      if(hBitmap == NULL)
+      {
         DWORD lastError = GetLastError(); //just for debugger
-
+        PostQuitMessage(0);
+        return FALSE;
+      }
       //get bitmap's info
       GetObjectW(hBitmap, sizeof(bmInfo), &bmInfo);
 
@@ -54,7 +65,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       return TRUE;
     }
-  case WM_PAINT:
+    case WM_PAINT:
     {
       HDC hDC; //handle to device context
       hDC = GetDC(hWnd); //getting handle to window's context
@@ -62,15 +73,37 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       HDC hDCbitmap = CreateCompatibleDC(hDC);
       SelectObject(hDCbitmap, hBitmap);
 
-      if(bFit == FALSE)
+      if(bZoomed) //zoomed (constant zoom xZOOM_FACTOR - window will be resized to fit selected area)
+      {
+        RECT rTemp = rSelection;
+        
+        rTemp.right = (rSelection.right - rSelection.left) * ZOOM_FACTOR;
+        rTemp.bottom = (rSelection.bottom - rSelection.top) * ZOOM_FACTOR;
+        rTemp.left = 0;
+        rTemp.top = 0;
+
+        ResizeClientRect(hWnd, rTemp);
+        
+        GetClientRect(hWnd, &rTemp);
+
+
+        StretchBlt(hDC, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
+          rSelection.left, rSelection.top,
+          rSelection.right, rSelection.bottom, SRCCOPY);
+      }
+      else if(!bFit) //fit
+      {
         BitBlt(hDC, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, hDCbitmap, 0, 0, SRCCOPY);
-      else
+      }
+      else  //stretch
       {
         RECT rWndRect;
         GetClientRect(hWnd, &rWndRect);
         StretchBlt(hDC, 0, 0, rWndRect.right, rWndRect.bottom, hDCbitmap, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY);
       }
-        
+
+
+
 
       DeleteDC(hDCbitmap);
 
@@ -78,29 +111,77 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       return TRUE;
     }
-  case WM_COMMAND:
+    case WM_LBUTTONDOWN: //first point
+    {
+      if(!bZoomed)
+      {
+        rSelection.left = GET_X_LPARAM(lParam);
+        rSelection.top = GET_Y_LPARAM(lParam);
+      }
+      return TRUE;
+    }
+    case WM_LBUTTONUP:  //second point
+    {
+      if(!bZoomed)
+      {
+        rSelection.right = GET_X_LPARAM(lParam);
+        rSelection.bottom = GET_Y_LPARAM(lParam);
+
+        RECT rTemp;
+
+        //hmmmmmmmmmmmmm
+        rTemp.top = (rSelection.top <= rSelection.bottom) ? rSelection.top : rSelection.bottom;
+        rTemp.bottom = (rSelection.bottom >= rSelection.top) ? rSelection.bottom : rSelection.top;
+        rTemp.left = (rSelection.left <= rSelection.right) ? rSelection.left : rSelection.right;
+        rTemp.right = (rSelection.right >= rSelection.left) ? rSelection.right : rSelection.left;
+
+        rSelection = rTemp;
+
+        bZoomed = TRUE;
+        bFit = FALSE;
+
+        
+        GetWindowRect(hWnd, &rTemp);
+        InvalidateRect(hWnd, &rTemp, FALSE); //force repaint
+      }
+      return TRUE;
+    }
+    case WM_RBUTTONDOWN: //reset zoom (can only zoom once)
+    {
+      bZoomed = FALSE;
+      SendMessageW(hWnd, WM_COMMAND, BN_CLICKED << 16 | ID_WIDOK_DOPASUJ, NULL);
+
+      rSelection = { 0 , 0, 0, 0};
+
+      return TRUE;
+    }
+    case WM_COMMAND:
     {
       switch(HIWORD(wParam)) //whats happened
       {
-      case BN_CLICKED:  //click
-        switch(LOWORD(wParam)) //on what
-        {
-        case ID_WIDOK_DOPASUJ:
+        case BN_CLICKED: //click
+          switch(LOWORD(wParam)) //on what
           {
-            bFit = FALSE;
-            ResizeClientRect(hWnd, rBitmap);
-            return 0;
+            case ID_WIDOK_DOPASUJ:
+            {
+              bFit = FALSE;
+              ResizeClientRect(hWnd, rBitmap);
+              return 0;
+            }
+            case ID_WIDOK_SKALUJ:
+            {
+              bFit = TRUE;
+              ResizeClientRect(hWnd, rBitmap);
+              return 0;
+            }
+            default:
+              break;
           }
-        case ID_WIDOK_SKALUJ:
-          {
-            bFit = TRUE;
-            ResizeClientRect(hWnd, rBitmap);
-            return 0;
-          }
-        }
+        default:
+          break;
       }
     }
-  case WM_CLOSE://zamykanie
+    case WM_CLOSE://zamykanie
     {
       DestroyWindow(hWnd);
       PostQuitMessage(0);
