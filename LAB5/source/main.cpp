@@ -3,6 +3,7 @@
 #include "res.h"
 
 #define ZOOM_FACTOR 4
+#define ZOOM_AREA_HALF_SIDE 30 //"preview" -> square with side length of ZOOM_AREA_HALF_SIDE * 2 * ZOOM_FACTOR
 
 INT_PTR CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -33,21 +34,24 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
   static BOOL bStretch = FALSE;
 
-  static BOOL bZoomed = FALSE;
+  static BOOL bEnlarged = FALSE;
   static RECT rSelection = {};
 
-  WCHAR szText[512];
+  static BOOL bZoomed = FALSE;
+  static POINT pMouse = {};
+
+  //WCHAR szText[512];
 
   switch (uMsg)
   {
-    case WM_INITDIALOG:
+    case WM_INITDIALOG: //INIT
     {
       //Load menu
       HMENU hMenu = LoadMenuW(GetModuleHandleW(NULL), MAKEINTRESOURCE(IDR_MAINMENU));
       SetMenu(hWnd, hMenu);
 
       //Path relative to working dir when launched from VS
-      hBitmap = (HBITMAP)LoadImageW(GetModuleHandleW(NULL), L"./../source/bitmaps/test.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+      hBitmap = (HBITMAP)LoadImageW(GetModuleHandleW(NULL), L"./../source/bitmaps/sruby.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
       if(hBitmap == NULL)
       {
@@ -65,7 +69,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       return TRUE;
     }
-    case WM_PAINT:
+    case WM_PAINT:  //PAINT
     {
       HDC hDC; //handle to device context
       hDC = GetDC(hWnd); //getting handle to window's context
@@ -73,7 +77,14 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       HDC hDCbitmap = CreateCompatibleDC(hDC);
       SelectObject(hDCbitmap, hBitmap);
 
-      if(bZoomed) //zoomed (constant zoom xZOOM_FACTOR - window will be resized to fit selected area)
+      //off-screen buffer to prevent flicker when zooming
+      RECT rTemp = {};
+      GetWindowRect(hWnd, &rTemp);
+      HDC hDCbuff = CreateCompatibleDC(hDC); 
+      HBITMAP hBuff = CreateCompatibleBitmap(hDC, rTemp.right, rTemp.bottom);
+      SelectObject(hDCbuff, hBuff);
+
+      if(bEnlarged) //enlarged (constant zoom xZOOM_FACTOR - window will be resized to fit selected area) TODO: organize things up, now its a disgusting mess
       {
         RECT rTemp = rSelection;
         
@@ -87,33 +98,67 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(hWnd, &rTemp);
 
 
-        StretchBlt(hDC, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
+        StretchBlt(hDCbuff, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
           rSelection.left, rSelection.top,
           rSelection.right - rSelection.left, rSelection.bottom - rSelection.top, SRCCOPY);
       }
       else if(!bStretch) //fit
       {
-        BitBlt(hDC, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, hDCbitmap, 0, 0, SRCCOPY);
+        BitBlt(hDCbuff, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, hDCbitmap, 0, 0, SRCCOPY); //to off-screen buffer
       }
       else  //stretch
       {
         RECT rWndRect;
         GetClientRect(hWnd, &rWndRect);
-        StretchBlt(hDC, 0, 0, rWndRect.right, rWndRect.bottom, hDCbitmap, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY);
+        StretchBlt(hDCbuff, 0, 0, rWndRect.right, rWndRect.bottom, hDCbitmap,
+          0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY); //to off-screen buffer
       }
 
+      //zoom (magnifying glass type)
+      if(bZoomed && !bEnlarged)
+      {
+        //upper left corner of source
+        POINT pSrc = {pMouse.x - ZOOM_AREA_HALF_SIDE, pMouse.y - ZOOM_AREA_HALF_SIDE};
 
+        //upper left corner of destination
+        POINT pDst = { pMouse.x - ZOOM_AREA_HALF_SIDE * ZOOM_FACTOR, pMouse.y - ZOOM_AREA_HALF_SIDE * ZOOM_FACTOR };
 
+        StretchBlt(hDCbuff, pDst.x, pDst.y, ZOOM_AREA_HALF_SIDE * 2 * ZOOM_FACTOR, ZOOM_AREA_HALF_SIDE * 2 * ZOOM_FACTOR, hDCbuff,
+          pSrc.x, pSrc.y, ZOOM_AREA_HALF_SIDE * 2, ZOOM_AREA_HALF_SIDE * 2, SRCCOPY);
+      }
+
+      //copy from off screen buffer to app context
+      //RECT rTemp = {};
+      //GetWindowRect(hWnd, &rTemp);
+      BitBlt(hDC, 0, 0, rTemp.right, rTemp.bottom, hDCbuff, 0, 0, SRCCOPY);
 
       DeleteDC(hDCbitmap);
+      DeleteDC(hDCbuff);
+
+      DeleteObject(hBuff);
 
       ReleaseDC(hWnd, hDC);
 
       return TRUE;
     }
+    case WM_MOUSEMOVE:
+    {
+      if((wParam & MK_CONTROL) == MK_CONTROL)//TODO: change this to something more "elegant"
+      {
+        pMouse.x = GET_X_LPARAM(lParam);
+        pMouse.y = GET_Y_LPARAM(lParam);
+
+        bZoomed = TRUE;
+      }
+      else
+      {
+        bZoomed = false; 
+      }
+      return TRUE;
+    }
     case WM_LBUTTONDOWN: //first point
     {
-      if(!bZoomed && !bStretch)
+      if(!bEnlarged && !bStretch)
       {
         rSelection.left = GET_X_LPARAM(lParam);
         rSelection.top = GET_Y_LPARAM(lParam);
@@ -122,7 +167,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_LBUTTONUP:  //second point
     {
-      if(!bZoomed && !bStretch)
+      if(!bEnlarged && !bStretch)
       {
         rSelection.right = GET_X_LPARAM(lParam);
         rSelection.bottom = GET_Y_LPARAM(lParam);
@@ -137,7 +182,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         rSelection = rTemp;
 
-        bZoomed = TRUE;
+        bEnlarged = TRUE;
         bStretch = FALSE;
 
         
@@ -146,7 +191,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       return TRUE;
     }
-    case WM_RBUTTONDOWN: //reset zoom (can only zoom once)
+    case WM_RBUTTONDOWN: //reset to basic state (can only enlarge once)
     {
       SendMessageW(hWnd, WM_COMMAND, BN_CLICKED << 16 | ID_WIDOK_DOPASUJ, NULL);
 
@@ -161,7 +206,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
           {
             case ID_WIDOK_DOPASUJ:
             {
-              bZoomed = FALSE;
+              bEnlarged = FALSE;
               rSelection = { 0 , 0, 0, 0};
 
               bStretch = FALSE;
