@@ -31,7 +31,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   static BITMAP bmInfo = {};
   static RECT rBitmap = {};
 
-  static BOOL bFit = FALSE;
+  static BOOL bStretch = FALSE;
 
   static BOOL bZoomed = FALSE;
   static RECT rSelection = {};
@@ -91,7 +91,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
           rSelection.left, rSelection.top,
           rSelection.right - rSelection.left, rSelection.bottom - rSelection.top, SRCCOPY);
       }
-      else if(!bFit) //fit
+      else if(!bStretch) //fit
       {
         BitBlt(hDC, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, hDCbitmap, 0, 0, SRCCOPY);
       }
@@ -113,7 +113,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_LBUTTONDOWN: //first point
     {
-      if(!bZoomed)
+      if(!bZoomed && !bStretch)
       {
         rSelection.left = GET_X_LPARAM(lParam);
         rSelection.top = GET_Y_LPARAM(lParam);
@@ -122,7 +122,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_LBUTTONUP:  //second point
     {
-      if(!bZoomed)
+      if(!bZoomed && !bStretch)
       {
         rSelection.right = GET_X_LPARAM(lParam);
         rSelection.bottom = GET_Y_LPARAM(lParam);
@@ -138,7 +138,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         rSelection = rTemp;
 
         bZoomed = TRUE;
-        bFit = FALSE;
+        bStretch = FALSE;
 
         
         GetWindowRect(hWnd, &rTemp);
@@ -148,10 +148,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     case WM_RBUTTONDOWN: //reset zoom (can only zoom once)
     {
-      bZoomed = FALSE;
       SendMessageW(hWnd, WM_COMMAND, BN_CLICKED << 16 | ID_WIDOK_DOPASUJ, NULL);
-
-      rSelection = { 0 , 0, 0, 0};
 
       return TRUE;
     }
@@ -164,14 +161,17 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
           {
             case ID_WIDOK_DOPASUJ:
             {
-              bFit = FALSE;
+              bZoomed = FALSE;
+              rSelection = { 0 , 0, 0, 0};
+
+              bStretch = FALSE;
               ResizeClientRect(hWnd, rBitmap);
               return 0;
             }
             case ID_WIDOK_SKALUJ:
             {
-              bFit = TRUE;
-              ResizeClientRect(hWnd, rBitmap);
+              bStretch = TRUE;
+              //ResizeClientRect(hWnd, rBitmap);
               return 0;
             }
             default:
