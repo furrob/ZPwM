@@ -54,10 +54,22 @@ IDR_MAINMENU MENU
 BEGIN
     POPUP "Widok"
     BEGIN
-        MENUITEM "Dopasuj",                     ID_WIDOK_DOPASUJ
-        MENUITEM "Skaluj",                      ID_WIDOK_SKALUJ
+        MENUITEM "Dopasuj okno",                ID_WIDOK_DOPASUJ
+        MENUITEM "Skaluj do okna",              ID_WIDOK_SKALUJ
+        MENUITEM SEPARATOR
+        MENUITEM "Poka¿/schowaj ikonê",         ID_WIDOK_IKONA
     END
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICONMAIN            ICON                    "icon_img.ico"
 
 #endif    // Polish (Poland) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -77,7 +89,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 IDD_MAINVIEW DIALOGEX 0, 0, 153, 70
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Window"
+CAPTION "BitmapView"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
 END
