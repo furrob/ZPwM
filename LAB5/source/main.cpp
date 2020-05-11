@@ -2,6 +2,8 @@
 #include <windowsx.h> //GET_*_LPARAM
 #include "res.h"
 
+//TODO path to BMP as szCmdLine
+
 /*
  *RMB - reset to default view
  *LMB click -> mouse move -> LMB release - "zooming"
@@ -51,6 +53,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   static ViewState eView = ViewState::NORMAL; //to replace all this confusing bool values
 
   static RECT rSelection = {};
+  static BOOL bSelection = FALSE; // used to mark if some area is selected
 
   static BOOL bZoomed = FALSE;
   static POINT pMouse = {};
@@ -69,7 +72,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       //Load icon
       hIcon = LoadIconW(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICONMAIN));
-      SendMessageW(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+      SendMessageW(hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
 
       //Path relative to working dir when launched from VS
       hBitmap = static_cast<HBITMAP>(LoadImageW(GetModuleHandleW(NULL), L"./../source/bitmaps/sruby.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
@@ -99,10 +102,10 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       SelectObject(hDCbitmap, hBitmap); //with previously loaded bitmap in it
 
       //off-screen buffer to prevent flicker when zooming
-      RECT rTemp = {}; //contains window size
-      GetClientRect(hWnd, &rTemp); //actual size of window
+      RECT rWndRect = {}; //contains window size
+      GetClientRect(hWnd, &rWndRect); //actual size of window
       HDC hDCbuff = CreateCompatibleDC(hDC); 
-      HBITMAP hBuff = CreateCompatibleBitmap(hDC, rTemp.right, rTemp.bottom); //create new, empty bitmap to draw on
+      HBITMAP hBuff = CreateCompatibleBitmap(hDC, rWndRect.right, rWndRect.bottom); //create new, empty bitmap to draw on
       SelectObject(hDCbuff, hBuff); //select that bitmap in newly created "buffer context"
 
       // "drawing" depending on current state TODO: maybe add something to avoid doing all this things every single call (maybe not)
@@ -111,25 +114,32 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case ViewState::NORMAL: //means window size set to fit whole unstretched bitmap
         {
           BitBlt(hDCbuff, 0, 0, bmInfo.bmWidth, bmInfo.bmHeight, hDCbitmap, 0, 0, SRCCOPY); //to off-screen buffer
+
+          if(bSelection)
+          {
+            RECT rTemp = { rSelection.left, rSelection.top, pMouse.x, pMouse.y };
+            DrawEdge(hDCbuff, &rTemp, BDR_SUNKENINNER | BDR_RAISEDOUTER, BF_RECT);
+          }
+
           break;
         }
         case ViewState::STRETCH: //displaying whole bitmap, but stretched to cover all visible window space
         {
           //rTemp contains window client rectangle
-          StretchBlt(hDCbuff, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
+          StretchBlt(hDCbuff, 0, 0, rWndRect.right, rWndRect.bottom, hDCbitmap,
             0, 0, bmInfo.bmWidth, bmInfo.bmHeight, SRCCOPY); //to off-screen buffer
           break;
         }
         case ViewState::ENLARGED: //enlarged, selected portion of bitmap displayed
         {
-          rTemp.right = static_cast<LONG>((rSelection.right - rSelection.left) * fEnlargeFactor); 
-          rTemp.bottom = static_cast<LONG>((rSelection.bottom - rSelection.top) * fEnlargeFactor);
-          rTemp.left = 0;
-          rTemp.top = 0;
+          rWndRect.right = static_cast<LONG>((rSelection.right - rSelection.left) * fEnlargeFactor); 
+          rWndRect.bottom = static_cast<LONG>((rSelection.bottom - rSelection.top) * fEnlargeFactor);
+          rWndRect.left = 0;
+          rWndRect.top = 0;
 
-          ResizeClientRect(hWnd, rTemp);
+          ResizeClientRect(hWnd, rWndRect);
 
-          StretchBlt(hDCbuff, 0, 0, rTemp.right, rTemp.bottom, hDCbitmap,
+          StretchBlt(hDCbuff, 0, 0, rWndRect.right, rWndRect.bottom, hDCbitmap,
             rSelection.left, rSelection.top,
             rSelection.right - rSelection.left, rSelection.bottom - rSelection.top, SRCCOPY);
 
@@ -153,11 +163,11 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         POINT pDstCorner = { pMouse.x - iOffset, pMouse.y - iOffset};
 
         //right-left check
-        pDstCorner.x = (pDstCorner.x + iOffset * 2 < rTemp.right) ? pDstCorner.x : rTemp.right - iOffset * 2;
+        pDstCorner.x = (pDstCorner.x + iOffset * 2 < rWndRect.right) ? pDstCorner.x : rWndRect.right - iOffset * 2;
         pDstCorner.x = (pDstCorner.x > 0) ? pDstCorner.x : 0;
         //up-down check
         pDstCorner.y = (pDstCorner.y > 0) ? pDstCorner.y : 0;
-        pDstCorner.y = (pDstCorner.y + iOffset * 2 < rTemp.bottom) ? pDstCorner.y : rTemp.bottom - iOffset * 2;
+        pDstCorner.y = (pDstCorner.y + iOffset * 2 < rWndRect.bottom) ? pDstCorner.y : rWndRect.bottom - iOffset * 2;
 
         StretchBlt(hDCbuff, pDstCorner.x, pDstCorner.y, iOffset * 2, iOffset * 2,
           hDCbuff, pSrcCorner.x, pSrcCorner.y, ZOOM_AREA_HALF_SIDE * 2, ZOOM_AREA_HALF_SIDE * 2, SRCCOPY);
@@ -165,7 +175,7 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
 
       //copy from off screen buffer to app context
-      BitBlt(hDC, 0, 0, rTemp.right, rTemp.bottom, hDCbuff, 0, 0, SRCCOPY);
+      BitBlt(hDC, 0, 0, rWndRect.right, rWndRect.bottom, hDCbuff, 0, 0, SRCCOPY);
 
       DeleteDC(hDCbitmap);
       DeleteDC(hDCbuff);
@@ -215,6 +225,8 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
         rSelection.left = GET_X_LPARAM(lParam);
         rSelection.top = GET_Y_LPARAM(lParam);
+
+        bSelection = TRUE;
       }
       return TRUE;
     }
@@ -224,6 +236,8 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
         rSelection.right = GET_X_LPARAM(lParam);
         rSelection.bottom = GET_Y_LPARAM(lParam);
+
+        bSelection = FALSE;
 
         RECT rTemp;
 
