@@ -101,21 +101,21 @@ INT_PTR CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       PAINTSTRUCT ps;
       HDC hDC = BeginPaint(hWnd, &ps);
       //HDC hDC = GetDC(hWnd);
-      
-      HDC hDCBuff = CreateCompatibleDC(hDC);
+     
+      //HDC hDCBuff = CreateCompatibleDC(hDC);
       INT iWidth = rClientRect.right - 2 * MARGIN_X;
       INT iHeight = rClientRect.bottom - MARGIN_Y;
-      HBITMAP hBitmap = CreateCompatibleBitmap(hDCBuff, iWidth, iHeight);
-      SelectObject(hDCBuff, hBitmap);
+      //HBITMAP hBitmap = CreateCompatibleBitmap(hDCBuff, iWidth, iHeight);
+      //SelectObject(hDCBuff, hBitmap);*/
       
       //background
-      BitBlt(hDCBuff, 0, 0, iWidth, iHeight, hDCBuff, 0, 0, BLACKNESS);
-      DisplayMessageList(hDCBuff);
+      BitBlt(hDC, MARGIN_X, MARGIN_Y, iWidth - MARGIN_X, iHeight - MARGIN_Y, hDC, 0, 0, BLACKNESS); //change x,y to 0 when using buffer and iW, iH wo margins
+      DisplayMessageList(hDC);
 
-      BitBlt(hDC, MARGIN_X, MARGIN_Y, iWidth, iHeight, hDCBuff, 0, MARGIN_Y, SRCCOPY);
+      //BitBlt(hDC, MARGIN_X, MARGIN_Y, iWidth, iHeight, hDCBuff, 0, MARGIN_Y, SRCCOPY);
 
-      DeleteObject(hBitmap);
-      DeleteDC(hDCBuff);
+      //DeleteObject(hBitmap);
+      //DeleteDC(hDCBuff);
 
       EndPaint(hWnd, &ps);
       //ReleaseDC(hWnd, hDC); //nie wiem
@@ -157,7 +157,7 @@ void TransmitMessage(HWND hWnd)
 void DisplayMessageList(HDC hDC)
 {
   SelectObject(hDC, GetStockObject(ANSI_VAR_FONT));
-  SetTextColor(hDC, RGB(10, 115, 10));
+  SetTextColor(hDC, RGB(20, 255, 20));
   SetBkColor(hDC, BACKGROUND_COLOR);
 
   for(INT i = 0; i < LINES_COUNT; ++i)
